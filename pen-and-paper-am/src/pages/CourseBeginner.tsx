@@ -253,7 +253,7 @@ const CourseBeginner = () => {
                     <span className="font-semibold">Weekend sessions</span>
                   </div>
                 </div>
-                <Button variant="outline" className="w-full border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary" asChild>
+                <Button variant="outline" className="w-full border-primary-foreground bg-primary-foreground/10 text-primary-foreground hover:bg-primary-foreground hover:text-primary" asChild>
                   <Link to="/contact">Ask About Next Cohort</Link>
                 </Button>
               </CardContent>

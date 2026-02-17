@@ -1,4 +1,7 @@
 export const CONTACT_SUBMISSION_STORAGE_KEY = 'ppa_contact_submissions';
+export const CONTACT_SUBMISSION_UPDATED_EVENT = 'ppa-contact-submissions-updated';
+
+type ContactSubmissionStorageMode = 'local' | 'session' | 'memory';
 
 export type ContactSubmissionStatus =
   | 'new'
@@ -35,6 +38,8 @@ interface ContactSubmissionPayload {
   source?: string;
 }
 
+const MEMORY_STORAGE = new Map<string, string>();
+
 const isObjectRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
@@ -54,6 +59,118 @@ const isStatus = (value: unknown): value is ContactSubmissionStatus =>
 const asStatus = (value: unknown): ContactSubmissionStatus =>
   isStatus(value) ? value : 'new';
 
+const canUseStorage = (storage?: Storage): storage is Storage => {
+  if (!storage) {
+    return false;
+  }
+
+  try {
+    const probeKey = '__ppa_contact_storage_probe__';
+    storage.setItem(probeKey, '1');
+    storage.removeItem(probeKey);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+const getStorageMode = (): ContactSubmissionStorageMode => {
+  if (typeof window === 'undefined') {
+    return 'memory';
+  }
+
+  if (canUseStorage(window.localStorage)) {
+    return 'local';
+  }
+
+  if (canUseStorage(window.sessionStorage)) {
+    return 'session';
+  }
+
+  return 'memory';
+};
+
+export const getContactSubmissionStorageMode = (): ContactSubmissionStorageMode =>
+  getStorageMode();
+
+const readStorageValue = (key: string): string | null => {
+  const mode = getStorageMode();
+
+  if (mode === 'local') {
+    try {
+      return window.localStorage.getItem(key);
+    } catch {
+      return null;
+    }
+  }
+
+  if (mode === 'session') {
+    try {
+      return window.sessionStorage.getItem(key);
+    } catch {
+      return null;
+    }
+  }
+
+  return MEMORY_STORAGE.get(key) ?? null;
+};
+
+const writeStorageValue = (key: string, value: string): void => {
+  const mode = getStorageMode();
+
+  if (mode === 'local') {
+    try {
+      window.localStorage.setItem(key, value);
+      return;
+    } catch {
+      // fall through to next storage type
+    }
+  }
+
+  if (mode === 'session') {
+    try {
+      window.sessionStorage.setItem(key, value);
+      return;
+    } catch {
+      // fall through to in-memory storage
+    }
+  }
+
+  MEMORY_STORAGE.set(key, value);
+};
+
+const removeStorageValue = (key: string): void => {
+  const mode = getStorageMode();
+
+  if (mode === 'local') {
+    try {
+      window.localStorage.removeItem(key);
+      return;
+    } catch {
+      // fall through
+    }
+  }
+
+  if (mode === 'session') {
+    try {
+      window.sessionStorage.removeItem(key);
+      return;
+    } catch {
+      // fall through
+    }
+  }
+
+  MEMORY_STORAGE.delete(key);
+};
+
+const dispatchContactSubmissionUpdate = (): void => {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  window.dispatchEvent(new Event(CONTACT_SUBMISSION_UPDATED_EVENT));
+};
+
 export const getContactSubmissionStatusLabel = (status: ContactSubmissionStatus): string => {
   switch (status) {
     case 'new':
@@ -72,7 +189,7 @@ export const getContactSubmissionStatusLabel = (status: ContactSubmissionStatus)
 };
 
 export const readContactSubmissions = (): ContactSubmission[] => {
-  const raw = localStorage.getItem(CONTACT_SUBMISSION_STORAGE_KEY);
+  const raw = readStorageValue(CONTACT_SUBMISSION_STORAGE_KEY);
   if (!raw) {
     return [];
   }
@@ -111,7 +228,14 @@ export const readContactSubmissions = (): ContactSubmission[] => {
 };
 
 export const writeContactSubmissions = (submissions: ContactSubmission[]): void => {
-  localStorage.setItem(CONTACT_SUBMISSION_STORAGE_KEY, JSON.stringify(submissions));
+  if (submissions.length === 0) {
+    removeStorageValue(CONTACT_SUBMISSION_STORAGE_KEY);
+    dispatchContactSubmissionUpdate();
+    return;
+  }
+
+  writeStorageValue(CONTACT_SUBMISSION_STORAGE_KEY, JSON.stringify(submissions));
+  dispatchContactSubmissionUpdate();
 };
 
 export const addContactSubmission = (payload: ContactSubmissionPayload): ContactSubmission => {

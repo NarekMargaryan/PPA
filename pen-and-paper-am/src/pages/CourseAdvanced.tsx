@@ -357,7 +357,7 @@ const CourseAdvanced = () => {
             <Button 
               variant="outline" 
               size="lg"
-              className="border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary"
+              className="border-primary-foreground bg-primary-foreground/10 text-primary-foreground hover:bg-primary-foreground hover:text-primary"
               asChild
             >
               <Link to="/faq">View FAQ</Link>

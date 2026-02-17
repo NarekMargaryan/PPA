@@ -28,9 +28,11 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { prepareImageForUpload } from '@/lib/imageUpload';
 import {
+  CONTACT_SUBMISSION_UPDATED_EVENT,
   CONTACT_SUBMISSION_STORAGE_KEY,
   ContactSubmission,
   ContactSubmissionStatus,
+  getContactSubmissionStorageMode,
   getContactSubmissionStatusLabel,
   readContactSubmissions,
   updateContactSubmissionStatus
@@ -144,6 +146,7 @@ const AdminAdvanced = () => {
   
   const [tempContent, setTempContent] = useState(content);
   const [contactSubmissions, setContactSubmissions] = useState<ContactSubmission[]>([]);
+  const [contactStorageMode, setContactStorageMode] = useState<'local' | 'session' | 'memory'>('local');
   const [activeContactSubmission, setActiveContactSubmission] = useState<ContactSubmission | null>(null);
   const [contactSearchQuery, setContactSearchQuery] = useState('');
   const [contactStatusFilter, setContactStatusFilter] = useState<ContactStatusFilter>('all');
@@ -347,16 +350,52 @@ const AdminAdvanced = () => {
     setTempContent(content);
   }, [content]);
 
-  useEffect(() => {
+  const refreshContactSubmissions = useCallback(() => {
     setContactSubmissions(readContactSubmissions());
+    setContactStorageMode(getContactSubmissionStorageMode());
   }, []);
+
+  useEffect(() => {
+    refreshContactSubmissions();
+  }, [refreshContactSubmissions]);
 
   useEffect(() => {
     if (activeTab !== 'contact-requests') {
       return;
     }
-    setContactSubmissions(readContactSubmissions());
-  }, [activeTab]);
+    refreshContactSubmissions();
+  }, [activeTab, refreshContactSubmissions]);
+
+  useEffect(() => {
+    const handleStorageUpdate = (event: StorageEvent) => {
+      if (event.key && event.key !== CONTACT_SUBMISSION_STORAGE_KEY) {
+        return;
+      }
+      refreshContactSubmissions();
+    };
+
+    const handleFocusUpdate = () => {
+      refreshContactSubmissions();
+    };
+
+    const handleVisibilityUpdate = () => {
+      if (document.visibilityState === 'visible') {
+        refreshContactSubmissions();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageUpdate);
+    window.addEventListener('focus', handleFocusUpdate);
+    window.addEventListener(CONTACT_SUBMISSION_UPDATED_EVENT, handleFocusUpdate);
+    document.addEventListener('visibilitychange', handleVisibilityUpdate);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageUpdate);
+      window.removeEventListener('focus', handleFocusUpdate);
+      window.removeEventListener(CONTACT_SUBMISSION_UPDATED_EVENT, handleFocusUpdate);
+      document.removeEventListener('visibilitychange', handleVisibilityUpdate);
+    };
+  }, [refreshContactSubmissions]);
 
   const adminAnnouncementItems = useMemo(() => {
     const enItems = content.en.announcements?.items || [];
@@ -2540,6 +2579,9 @@ const AdminAdvanced = () => {
               <div>
                 <h2 className="text-2xl font-bold">Contact Requests</h2>
                 <p className="text-muted-foreground">New submissions from the contact page</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Storage mode: {contactStorageMode}. Requests are browser-local and visible only on the same browser/device.
+                </p>
               </div>
               <Badge variant="secondary">
                 {filteredContactSubmissions.length} filtered / {contactSubmissions.length} total
