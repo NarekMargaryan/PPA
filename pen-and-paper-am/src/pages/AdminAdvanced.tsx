@@ -9,7 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useContent } from '@/contexts/ContentContext';
 import Logo from '@/components/Logo';
 import { 
-  Save, Eye, EyeOff, Settings, Lock, Unlock, Users, FileText, Megaphone,
+  Save, Eye, EyeOff, Lock, Users, FileText, Megaphone,
   GraduationCap, HelpCircle, Mail, Globe, Download, Upload, LogOut, Edit, Trash2, Pin, Plus, Bell
 } from 'lucide-react';
 import { SearchFilter, ContentType, SortBy, SortOrder } from '@/components/admin/SearchFilter';
@@ -114,7 +114,7 @@ const buildAnnouncementSlug = (value: string, fallback: string): string => {
 };
 
 const AdminAdvanced = () => {
-  const { currentUser, isAuthenticated, hasUsers, login, logout, initializeAdmin, hasPermission, verifyCurrentPassword } = useAuth();
+  const { currentUser, isAuthenticated, hasUsers, login, logout, initializeAdmin, hasPermission, verifyCurrentPassword, changePassword } = useAuth();
   const { content, setContentData } = useContent();
   
   const [username, setUsername] = useState('');
@@ -125,6 +125,11 @@ const AdminAdvanced = () => {
   const [setupPassword, setSetupPassword] = useState('');
   const [setupConfirmPassword, setSetupConfirmPassword] = useState('');
   const [setupError, setSetupError] = useState('');
+  const [showPasswordDialog, setShowPasswordDialog] = useState(false);
+  const [currentPasswordValue, setCurrentPasswordValue] = useState('');
+  const [newPasswordValue, setNewPasswordValue] = useState('');
+  const [confirmNewPasswordValue, setConfirmNewPasswordValue] = useState('');
+  const [passwordChangeError, setPasswordChangeError] = useState('');
 
   const [activeTab, setActiveTab] = useState('home');
   const [pagesTab, setPagesTab] = useState<PageEditorTab>('home');
@@ -714,6 +719,63 @@ const AdminAdvanced = () => {
     }
     logout();
   }, [activeTab, confirmLeaveWithUnsavedPages, logout]);
+
+  const resetPasswordDialog = useCallback(() => {
+    setCurrentPasswordValue('');
+    setNewPasswordValue('');
+    setConfirmNewPasswordValue('');
+    setPasswordChangeError('');
+  }, []);
+
+  const handleOpenPasswordDialog = useCallback(() => {
+    resetPasswordDialog();
+    setShowPasswordDialog(true);
+  }, [resetPasswordDialog]);
+
+  const handleSavePasswordChange = useCallback(() => {
+    if (!currentUser) {
+      return;
+    }
+
+    setPasswordChangeError('');
+
+    if (!currentPasswordValue || !newPasswordValue || !confirmNewPasswordValue) {
+      setPasswordChangeError('All fields are required');
+      return;
+    }
+
+    if (newPasswordValue.length < 8) {
+      setPasswordChangeError('Password must be at least 8 characters');
+      return;
+    }
+
+    if (newPasswordValue !== confirmNewPasswordValue) {
+      setPasswordChangeError('New passwords do not match');
+      return;
+    }
+
+    if (newPasswordValue === currentPasswordValue) {
+      setPasswordChangeError('New password must be different from current password');
+      return;
+    }
+
+    const updated = changePassword(currentUser.id, currentPasswordValue, newPasswordValue);
+    if (!updated) {
+      setPasswordChangeError('Current password is incorrect');
+      return;
+    }
+
+    alert('Password changed successfully!');
+    setShowPasswordDialog(false);
+    resetPasswordDialog();
+  }, [
+    changePassword,
+    confirmNewPasswordValue,
+    currentPasswordValue,
+    currentUser,
+    newPasswordValue,
+    resetPasswordDialog
+  ]);
 
   const updateFeatureItemField = useCallback(
     (lang: 'en' | 'hy', id: string, field: 'title' | 'description', value: string) => {
@@ -2304,6 +2366,11 @@ const AdminAdvanced = () => {
               <Button variant="outline" size="sm" onClick={handlePreview}>
                 <Eye className="h-4 w-4 sm:mr-2" />
                 <span className="hidden sm:inline">Preview</span>
+              </Button>
+
+              <Button variant="outline" size="sm" onClick={handleOpenPasswordDialog}>
+                <Lock className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Change Password</span>
               </Button>
               
               {hasPermission('edit_content') && (
@@ -4075,6 +4142,65 @@ const AdminAdvanced = () => {
           </div>
         </div>
       )}
+
+      <Dialog
+        open={showPasswordDialog}
+        onOpenChange={(open) => {
+          setShowPasswordDialog(open);
+          if (!open) {
+            resetPasswordDialog();
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Change Password</DialogTitle>
+            <DialogDescription>Update your admin password.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="current-password-change">Current Password</Label>
+              <Input
+                id="current-password-change"
+                type="password"
+                value={currentPasswordValue}
+                onChange={(event) => setCurrentPasswordValue(event.target.value)}
+                autoComplete="current-password"
+                placeholder="Enter current password"
+              />
+            </div>
+            <div>
+              <Label htmlFor="new-password-change">New Password</Label>
+              <Input
+                id="new-password-change"
+                type="password"
+                value={newPasswordValue}
+                onChange={(event) => setNewPasswordValue(event.target.value)}
+                autoComplete="new-password"
+                placeholder="Minimum 8 characters"
+              />
+            </div>
+            <div>
+              <Label htmlFor="confirm-password-change">Confirm New Password</Label>
+              <Input
+                id="confirm-password-change"
+                type="password"
+                value={confirmNewPasswordValue}
+                onChange={(event) => setConfirmNewPasswordValue(event.target.value)}
+                autoComplete="new-password"
+                placeholder="Re-enter new password"
+              />
+            </div>
+            {passwordChangeError && <p className="text-sm text-destructive">{passwordChangeError}</p>}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowPasswordDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSavePasswordChange}>Save Password</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={showAnnouncementModal} onOpenChange={setShowAnnouncementModal}>
         <DialogContent className="w-[95vw] sm:w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
