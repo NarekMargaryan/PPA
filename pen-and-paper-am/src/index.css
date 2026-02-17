@@ -1,0 +1,144 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 210 20% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 210 20% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 210 20% 15%;
+
+    /* PPA Brand Colors */
+    --primary: 207 81% 26%; /* #0F4776 deep blue */
+    --primary-foreground: 0 0% 100%;
+    --primary-light: 207 81% 35%;
+    --primary-dark: 207 81% 20%;
+
+    --accent: 39 100% 65%; /* #FFB84D orange accent */
+    --accent-foreground: 210 20% 15%;
+    --accent-light: 39 100% 75%;
+    --accent-dark: 39 100% 55%;
+
+    --secondary: 210 16% 96%;
+    --secondary-foreground: 210 20% 15%;
+
+    --muted: 210 16% 96%;
+    --muted-foreground: 210 12% 55%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 210 16% 90%;
+    --input: 210 16% 90%;
+    --ring: 207 81% 26%;
+
+    /* Custom design tokens */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-light)));
+    --gradient-accent: linear-gradient(135deg, hsl(var(--accent)), hsl(var(--accent-light)));
+    --gradient-hero: linear-gradient(135deg, hsl(var(--primary-dark)), hsl(var(--primary)));
+    
+    --shadow-elegant: 0 10px 30px -10px hsl(var(--primary) / 0.2);
+    --shadow-accent: 0 8px 25px -8px hsl(var(--accent) / 0.3);
+    
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 210 20% 8%;
+    --foreground: 210 16% 95%;
+
+    --card: 210 20% 10%;
+    --card-foreground: 210 16% 95%;
+
+    --popover: 210 20% 10%;
+    --popover-foreground: 210 16% 95%;
+
+    --primary: 207 81% 45%;
+    --primary-foreground: 0 0% 100%;
+    --primary-light: 207 81% 55%;
+    --primary-dark: 207 81% 35%;
+
+    --accent: 39 100% 65%;
+    --accent-foreground: 210 20% 8%;
+    --accent-light: 39 100% 75%;
+    --accent-dark: 39 100% 55%;
+
+    --secondary: 210 20% 15%;
+    --secondary-foreground: 210 16% 95%;
+
+    --muted: 210 20% 15%;
+    --muted-foreground: 210 12% 65%;
+
+    --destructive: 0 62.8% 45%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 210 20% 15%;
+    --input: 210 20% 15%;
+    --ring: 207 81% 45%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  /* Fix gradient text rendering issues */
+  .bg-clip-text {
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  
+  /* Better text rendering for gradient text */
+  .gradient-text-fix {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    letter-spacing: 0.01em;
+    /* Fix for descenders being cut off (y, g, p, q, j) */
+    padding-bottom: 0.15em;
+    line-height: 1.3;
+  }
+}
