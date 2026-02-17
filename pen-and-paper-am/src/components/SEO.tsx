@@ -49,6 +49,9 @@ const SEO = ({
   const fullImage = image || defaultImage;
   const fullUrl = url ? `${siteUrl}${url}` : siteUrl;
   const imageUrl = fullImage.startsWith('http') ? fullImage : `${siteUrl}${fullImage}`;
+  const basePath = url || '/';
+  const enUrl = `${siteUrl}${basePath}${basePath.includes('?') ? '&' : '?'}lang=en`;
+  const hyUrl = `${siteUrl}${basePath}${basePath.includes('?') ? '&' : '?'}lang=hy`;
 
   return (
     <Helmet>
@@ -67,6 +70,7 @@ const SEO = ({
       <meta property="og:image:alt" content={fullTitle} />
       <meta property="og:site_name" content="Pen & Paper Accounting" />
       <meta property="og:locale" content={language === 'en' ? 'en_US' : 'hy_AM'} />
+      <meta property="og:locale:alternate" content={language === 'en' ? 'hy_AM' : 'en_US'} />
       
       {/* Twitter Card */}
       <meta name="twitter:card" content="summary_large_image" />
@@ -97,10 +101,14 @@ const SEO = ({
       )}
       
       {/* Additional SEO tags */}
-      <meta name="robots" content="index, follow" />
-      <meta name="googlebot" content="index, follow" />
+      <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" />
+      <meta name="googlebot" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" />
       <meta name="author" content="Pen & Paper Accounting" />
+      <meta name="language" content={language === 'en' ? 'English' : 'Armenian'} />
       <link rel="canonical" href={fullUrl} />
+      <link rel="alternate" hrefLang="en" href={enUrl} />
+      <link rel="alternate" hrefLang="hy" href={hyUrl} />
+      <link rel="alternate" hrefLang="x-default" href={fullUrl} />
     </Helmet>
   );
 };

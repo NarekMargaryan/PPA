@@ -32,34 +32,54 @@ const StructuredData = (props: StructuredDataProps) => {
   if (props.type === 'organization' || !props.type) {
     schema = {
       '@context': 'https://schema.org',
-      '@type': 'EducationalOrganization',
-      name: 'Pen & Paper Accounting',
-      alternateName: 'PPA',
-      url: 'https://ppa.am',
-      logo: 'https://ppa.am/logo.png',
-      description: 'Professional accounting training center in Armenia specializing in US accounting standards, QuickBooks, Xero, and Excel training.',
-      address: {
-        '@type': 'PostalAddress',
-        streetAddress: 'Yerevan',
-        addressLocality: 'Yerevan',
-        addressCountry: 'AM',
-      },
-      contactPoint: {
-        '@type': 'ContactPoint',
-        telephone: '+374-33-52-70-70',
-        contactType: 'customer service',
-        availableLanguage: ['en', 'hy'],
-      },
-      sameAs: [
-        'https://www.instagram.com/penandpaperaccounting/',
-        'https://www.linkedin.com/company/pen-paper-accounting/',
-        'https://www.facebook.com/share/1GDZ1qCAW2/',
+      '@graph': [
+        {
+          '@type': 'EducationalOrganization',
+          '@id': 'https://ppa.am/#organization',
+          name: 'Pen & Paper Accounting',
+          alternateName: 'PPA',
+          url: 'https://ppa.am',
+          logo: 'https://ppa.am/logo.png',
+          description: 'Professional accounting training center in Armenia specializing in US accounting standards, QuickBooks, Xero, and Excel training.',
+          address: {
+            '@type': 'PostalAddress',
+            streetAddress: 'Yerevan',
+            addressLocality: 'Yerevan',
+            addressCountry: 'AM',
+          },
+          contactPoint: {
+            '@type': 'ContactPoint',
+            telephone: '+374-33-52-70-70',
+            contactType: 'customer service',
+            availableLanguage: ['en', 'hy'],
+          },
+          sameAs: [
+            'https://www.instagram.com/penandpaperaccounting/',
+            'https://www.linkedin.com/company/pen-paper-accounting/',
+            'https://www.facebook.com/share/1GDZ1qCAW2/',
+          ],
+          areaServed: {
+            '@type': 'Country',
+            name: 'Armenia',
+          },
+          educationalCredentialAwarded: 'Certificate of Completion',
+        },
+        {
+          '@type': 'WebSite',
+          '@id': 'https://ppa.am/#website',
+          url: 'https://ppa.am',
+          name: 'Pen & Paper Accounting',
+          publisher: {
+            '@id': 'https://ppa.am/#organization',
+          },
+          inLanguage: ['en', 'hy'],
+          potentialAction: {
+            '@type': 'SearchAction',
+            target: 'https://ppa.am/faq?query={search_term_string}',
+            'query-input': 'required name=search_term_string',
+          },
+        },
       ],
-      areaServed: {
-        '@type': 'Country',
-        name: 'Armenia',
-      },
-      educationalCredentialAwarded: 'Certificate of Completion',
     };
   } else if (props.type === 'course') {
     schema = {

@@ -398,6 +398,14 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [language, setLanguage] = useState<Language>('en');
 
   useEffect(() => {
+    const requestedLanguage = typeof window !== 'undefined'
+      ? new URLSearchParams(window.location.search).get('lang')
+      : null;
+    if (requestedLanguage === 'en' || requestedLanguage === 'hy') {
+      setLanguage(requestedLanguage);
+      return;
+    }
+
     const savedLanguage = localStorage.getItem('ppa-language') as Language;
     if (savedLanguage && (savedLanguage === 'en' || savedLanguage === 'hy')) {
       setLanguage(savedLanguage);

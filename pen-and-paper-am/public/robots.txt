@@ -11,6 +11,7 @@ Disallow: /admin/
 
 # Sitemap location
 Sitemap: https://ppa.am/sitemap.xml
+Host: ppa.am
 
 # Crawl rate (requests per second) - optional
 # Crawl-delay: 1
